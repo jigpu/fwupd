@@ -463,10 +463,6 @@ fu_wac_device_write_firmware(FuDevice *device,
 		return FALSE;
 	g_debug("using image at addr 0x%0x", (guint)fu_firmware_get_addr(img));
 
-	/* enter flash mode */
-	if (!fu_wac_device_switch_to_flash_loader(self, error))
-		return FALSE;
-
 	/* get firmware parameters (page sz and transfer sz) */
 	if (!fu_wac_device_ensure_parameters(self, error))
 		return FALSE;
@@ -828,6 +824,10 @@ fu_wac_device_setup(FuDevice *device, GError **error)
 		if (!fu_wac_device_add_modules(self, error))
 			return FALSE;
 	}
+
+	/* enter flash mode */
+	if (!fu_wac_device_switch_to_flash_loader(self, error))
+		return FALSE;
 
 	/* success */
 	return TRUE;
