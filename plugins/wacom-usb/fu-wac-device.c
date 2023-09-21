@@ -41,6 +41,8 @@ struct _FuWacDevice {
 	guint16 configuration;
 };
 
+static int flash_complete = 0;
+
 G_DEFINE_TYPE(FuWacDevice, fu_wac_device, FU_TYPE_HID_DEVICE)
 
 static gboolean
@@ -825,11 +827,20 @@ fu_wac_device_setup(FuDevice *device, GError **error)
 			return FALSE;
 	}
 
-	/* enter flash mode */
-	if (!fu_wac_device_switch_to_flash_loader(self, error))
-		return FALSE;
+	/* enter flash mode only if we haven't finished flashing */
+	if (!flash_complete)
+		if (!fu_wac_device_switch_to_flash_loader(self, error))
+			return FALSE;
 
 	/* success */
+	return TRUE;
+}
+
+static gboolean
+fu_wac_device_reload(FuDevice *device, GError **error)
+{
+	g_debug("Calling fu_wac_device_reload");
+	flash_complete = TRUE;
 	return TRUE;
 }
 
@@ -917,6 +928,7 @@ fu_wac_device_class_init(FuWacDeviceClass *klass)
 	klass_device->to_string = fu_wac_device_to_string;
 	klass_device->setup = fu_wac_device_setup;
 	klass_device->cleanup = fu_wac_device_cleanup;
+	klass_device->reload = fu_wac_device_reload;
 	klass_device->close = fu_wac_device_close;
 	klass_device->set_progress = fu_wac_device_set_progress;
 }
